@@ -1,19 +1,19 @@
-export type Result = {
-	type: string,
-	precision: number,
-	position: XY,
+export type ImageDetection = {
+	type: string;
+	precision: number;
+	position: Position;
 }
 
-export type XY = {
-	x: number,
-	y: number,
+export type Position = {
+	x: number;
+	y: number;
 }
 
-export type FinalResult = Result & {
-	extensions: Result[],
+export type FinalImageDetection = ImageDetection & {
+	extensions: ImageDetection[],
 }
 
-export type ClosestResult = {
-	result: Result,
-	closest: Result,
+export type ClosestImageDetection = {
+	result: ImageDetection,
+	closest: ImageDetection,
 }

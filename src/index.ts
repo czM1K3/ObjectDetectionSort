@@ -1,18 +1,18 @@
 import { source } from "./source";
-import { Result, FinalResult, ClosestResult } from "./type";
+import { ImageDetection, FinalImageDetection, ClosestImageDetection } from "./type";
 
-const resolve = (results: Result[]) => {
+export const resolveImageDetections = (results: ImageDetection[]) => {
 	const startTag = "circle";
 	const endTag = "house";
 	const precisionLimit = 0.1;
 	const lineLimit = 1;
 
 	// Filter results that are above precision limit
-	const filteredResult: Result[] = results.filter(result => result.precision > precisionLimit);
+	const filteredResult: ImageDetection[] = results.filter(result => result.precision > precisionLimit);
 
 	// Find start and stop points
-	const start: Result = filteredResult.filter(result => result.type === startTag).sort((a, b) => b.precision - a.precision)[0];
-	const end: Result = filteredResult.filter(result => result.type === endTag).sort((a, b) => b.precision - a.precision)[0];
+	const start: ImageDetection = filteredResult.filter(result => result.type === startTag).sort((a, b) => b.precision - a.precision)[0];
+	const end: ImageDetection = filteredResult.filter(result => result.type === endTag).sort((a, b) => b.precision - a.precision)[0];
 	if (!start || !end) return null;
 
 	// Find if needed to reverse axis
@@ -20,7 +20,7 @@ const resolve = (results: Result[]) => {
 	const yMirror: boolean = start.position.y > end.position.y;
 
 	// Reversing axis if needed
-	const fixedResults: Result[] = filteredResult.map(result => ({
+	const fixedResults: ImageDetection[] = filteredResult.map(result => ({
 		position: {
 			x: xMirror ? 1 - result.position.x : result.position.x,
 			y: yMirror ? 1 - result.position.y : result.position.y,
@@ -45,7 +45,7 @@ const resolve = (results: Result[]) => {
 	const ratio: number = xDistance / yDistance;
 	
 	// Filter remaining cards
-	const resultsWithoutStartAndEnd: Result[] = fixedResults.filter(result => ![startTag, endTag].includes(result.type));
+	const resultsWithoutStartAndEnd: ImageDetection[] = fixedResults.filter(result => ![startTag, endTag].includes(result.type));
 
 	// Filter results that are in the same line and sort them
 	const resultsInLine = resultsWithoutStartAndEnd.filter(result => {
@@ -59,8 +59,8 @@ const resolve = (results: Result[]) => {
 	const resultsNotInLine = resultsWithoutStartAndEnd.filter(result => !resultsInLine.includes(result));
 
 	// Pair card that is not in line with the closest card in line
-	const closestResult: ClosestResult[] = resultsNotInLine.map(result => {
-		const closest: Result = [...resultsInLine].sort((a, b) => PythagoreanSort(a, b, result))[0];
+	const closestResult: ClosestImageDetection[] = resultsNotInLine.map(result => {
+		const closest: ImageDetection = [...resultsInLine].sort((a, b) => PythagoreanSort(a, b, result))[0];
 		return {
 			result,
 			closest,
@@ -68,8 +68,8 @@ const resolve = (results: Result[]) => {
 	});
 
 	// Pair card that is in line with the closest card in line
-	const resultInLineWithExtensions: FinalResult[] = resultsInLine.map(result => {
-		const childs: Result[] = closestResult.filter(child => child.closest === result).map(child => child.result).sort((a, b) => PythagoreanSort(a, b, result));
+	const resultInLineWithExtensions: FinalImageDetection[] = resultsInLine.map(result => {
+		const childs: ImageDetection[] = closestResult.filter(child => child.closest === result).map(child => child.result).sort((a, b) => PythagoreanSort(a, b, result));
 		return {
 			...result,
 			extensions: childs,
@@ -81,10 +81,11 @@ const resolve = (results: Result[]) => {
 
 const PythagoreanTheorem = (a: number, b: number): number => Math.sqrt(a * a + b * b);
 
-const PythagoreanSort = (a: Result, b: Result, target: Result): number => {
+const PythagoreanSort = (a: ImageDetection, b: ImageDetection, target: ImageDetection): number => {
 	const distanceA: number = PythagoreanTheorem(a.position.x - target.position.x, a.position.y - target.position.y);
 	const distanceB: number = PythagoreanTheorem(b.position.x - target.position.x, b.position.y - target.position.y);
 	return distanceA - distanceB;
 }
 
-console.log(resolve(source));
+
+console.log(resolveImageDetections(source));

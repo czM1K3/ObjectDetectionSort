@@ -1,6 +1,6 @@
-import { Result } from "./type";
+import { ImageDetection } from "./type";
 
-export const source: Result[] = [
+export const source: ImageDetection[] = [
 	{
 		type: "2",
 		precision: 0.999836802482605,
