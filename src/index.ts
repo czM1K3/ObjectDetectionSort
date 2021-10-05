@@ -1,11 +1,11 @@
 import { source } from "./source";
-import { ImageDetection, FinalImageDetection, ClosestImageDetection } from "./type";
+import { ImageDetection, FinalImageDetection, ClosestImageDetection, Position } from "./type";
 
 export const resolveImageDetections = (results: ImageDetection[]) => {
 	const startTag = "circle";
 	const endTag = "house";
 	const precisionLimit = 0.1;
-	const lineLimit = 1;
+	const lineLimit = 0.1;
 
 	// Filter results that are above precision limit
 	const filteredResult: ImageDetection[] = results.filter(result => result.precision > precisionLimit);
@@ -38,21 +38,17 @@ export const resolveImageDetections = (results: ImageDetection[]) => {
 	}
 
 	// Find how far apart the start and end points are
-	const xDistance: number = end.position.x - start.position.x;
-	const yDistance: number = end.position.y - start.position.y;
-
-	// Find their ratio
-	const ratio: number = xDistance / yDistance;
+	const u: Position = { x: end.position.x - start.position.x, y: end.position.y - start.position.y };
+	const n: Position = { x: -u.y, y: u.x };
+	const c: number = -1 * ((n.x * start.position.x) + (n.y * start.position.y));
 	
 	// Filter remaining cards
 	const resultsWithoutStartAndEnd: ImageDetection[] = fixedResults.filter(result => ![startTag, endTag].includes(result.type));
 
 	// Filter results that are in the same line and sort them
 	const resultsInLine = resultsWithoutStartAndEnd.filter(result => {
-		const newXDistance: number = result.position.x - start.position.x;
-		const newYDistance: number = result.position.y - start.position.y;
-		const newRatio: number = newXDistance / newYDistance;
-		return Math.abs(newRatio - ratio) < lineLimit;
+		const diviation: number = getDeviation(result, n, c);
+		return diviation < lineLimit;
 	}).sort((a, b) => PythagoreanSort(a, b, start));
 
 	// Filter cards that are not in line
@@ -87,5 +83,11 @@ const PythagoreanSort = (a: ImageDetection, b: ImageDetection, target: ImageDete
 	return distanceA - distanceB;
 }
 
+const getDeviation = (target: ImageDetection, n: Position, c: number): number => {
+	const up = Math.abs((n.x * target.position.x) + (n.y * target.position.y) + c);
+	const down = Math.sqrt(n.x * n.x + n.y * n.y);
+	return up / down;
+}
 
-console.log(resolveImageDetections(source));
+const result = resolveImageDetections(source);
+console.log(result);
