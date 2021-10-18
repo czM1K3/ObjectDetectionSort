@@ -56,7 +56,7 @@ export const resolveImageDetections = (results: ImageDetection[]) => {
 
 	// Pair card that is not in line with the closest card in line
 	const closestResult: ClosestImageDetection[] = resultsNotInLine.map(result => {
-		const closest: ImageDetection = [...resultsInLine].sort((a, b) => getBAngle(start.position, result.position, b.position) - getBAngle(start.position, result.position, a.position))[0];
+		const closest: ImageDetection = [...resultsInLine].sort((a, b) => getBAngle(start.position, b.position, result.position) - getBAngle(start.position, a.position, result.position))[0];
 		return {
 			result,
 			closest,
@@ -97,7 +97,7 @@ const getBAngle = (A: Position, B: Position, C: Position): number => {
 	return fixAngle(radiansToDegrees(angle));
 }
 
-const fixAngle = (angle: number): number => angle > 90 ? angle - 180 : angle;
+const fixAngle = (angle: number): number => angle > 90 ? 180 - angle : angle;
 
 const radiansToDegrees = (radians: number): number => radians * (180 / Math.PI);
 
