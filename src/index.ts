@@ -56,7 +56,7 @@ export const resolveImageDetections = (results: ImageDetection[]) => {
 
 	// Pair card that is not in line with the closest card in line
 	const closestResult: ClosestImageDetection[] = resultsNotInLine.map(result => {
-		const closest: ImageDetection = [...resultsInLine].sort((a, b) => PythagoreanSort(a, b, result))[0];
+		const closest: ImageDetection = [...resultsInLine].sort((a, b) => getBAngle(start.position, result.position, b.position) - getBAngle(start.position, result.position, a.position))[0];
 		return {
 			result,
 			closest,
@@ -88,6 +88,18 @@ const getDeviation = (target: ImageDetection, n: Position, c: number): number =>
 	const down = Math.sqrt(n.x * n.x + n.y * n.y);
 	return up / down;
 }
+
+const getBAngle = (A: Position, B: Position, C: Position): number => {
+	const a = Math.sqrt((B.x - C.x) * (B.x - C.x) + (B.y - C.y) * (B.y - C.y));
+	const b = Math.sqrt((C.x - A.x) * (C.x - A.x) + (C.y - A.y) * (C.y - A.y));
+	const c = Math.sqrt((A.x - B.x) * (A.x - B.x) + (A.y - B.y) * (A.y - B.y));
+	const angle = Math.acos((a * a + c * c - b * b) / (2 * a * c));
+	return fixAngle(radiansToDegrees(angle));
+}
+
+const fixAngle = (angle: number): number => angle > 90 ? angle - 180 : angle;
+
+const radiansToDegrees = (radians: number): number => radians * (180 / Math.PI);
 
 const result = resolveImageDetections(source);
 console.log(result);
